@@ -16,9 +16,10 @@ class API(ABC):
         self.search_params = None
         self.__experience = None
         self.__area = None
-        self.__currency = None
         self.__only_with_salary = False
         self.__salary = None
+        self.__page = 0
+        self.__per_page = 20
 
     @abstractmethod
     def get_vacancies(self):
@@ -87,25 +88,6 @@ class API(ABC):
         Устанавливает значение типа зарплаты вакансии
         (True - зарплата указана, False - зарплата не указана)
         :param value: bool-тип
-        '''
-        pass
-
-    @property
-    @abstractmethod
-    def currency(self):
-        '''
-        Выводит значение выбранной пользователем
-        валюты
-        :return: аббревиатура валюты
-        '''
-        pass
-
-    @currency.setter
-    @abstractmethod
-    def currency(self, value):
-        '''
-        Устанавливает валюту, относительно выбраного числа
-        :param value: выбранное число пользователем
         '''
         pass
 
