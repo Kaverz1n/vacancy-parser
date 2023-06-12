@@ -1,6 +1,7 @@
 import requests
 
 from src.api import API
+from src.vacancy import Vacancy
 
 
 class HHAPI(API):
@@ -38,6 +39,7 @@ class HHAPI(API):
         '''
         vacancies = []
 
+        # цикл, перебирающий все вакансии по переданным параметрам
         while True:
             response = requests.get(
                 url=f'{self.__api}/vacancies',
@@ -53,13 +55,67 @@ class HHAPI(API):
                 }
             ).json()
 
-            if self.__page == response['pages']:
+            # выход из цикла, если вакансии закончились
+            try:
+                if self.__page == response['pages']:
+                    break
+            except KeyError:
                 break
 
             self.__page += 1
 
-            for vacancy in response['items']:
-                vacancies.append(vacancy)
+            # цикл, перебирающий все элементы вакансии
+            for item in response['items']:
+                vacancy_name = item['name']
+                vacancy_requirement = item['snippet']['requirement']
+                vacancy_responsibility = item['snippet']['responsibility']
+                vacancy_area = item['area']['name']
+
+                # проверка на то, что у вакансии указана зарплата
+                if item['salary'] is None:
+                    vacancy_salary_from = 0
+                    vacancy_salary_to = 0
+                    vacancy_currency = None
+                else:
+                    vacancy_salary_from = item['salary']['from']
+                    vacancy_salary_to = item['salary']['to']
+                    vacancy_currency = item['salary']['currency']
+
+                vacancy_experience = item['experience']['name']
+                vacancy_employer = item['employer']['name']
+                vacancy_employment = item['employment']['name']
+                vacancy_address = item['address']
+
+                # проверка на то, что у вакансии указан адрес
+                if vacancy_address is None:
+                    vacancy_address = 'Адресс не указан'
+                else:
+                    vacancy_address = item['address']['raw']
+
+                if vacancy_salary_from is None:
+                    vacancy_salary_from = 0
+
+                if vacancy_salary_to is None:
+                    vacancy_salary_to = 0
+
+                # создание вакансии на основе экземпляра класса Vacancy
+                vacancy = Vacancy(
+                    vacancy_name,
+                    vacancy_requirement,
+                    vacancy_responsibility,
+                    vacancy_area,
+                    vacancy_salary_from,
+                    vacancy_salary_to,
+                    vacancy_currency,
+                    vacancy_experience,
+                    vacancy_employer,
+                    vacancy_employment,
+                    vacancy_address
+                )
+
+                # проверка, что валюта вакансии соответсвует переданной
+                if vacancy_currency == self.__currency:
+                    vacancies.append(vacancy)
 
         return vacancies
 
