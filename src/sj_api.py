@@ -1,6 +1,7 @@
 import requests
 
 from src.api import API
+from src.vacancy import Vacancy
 from tokens import token_SJ
 
 
@@ -30,12 +31,10 @@ class SJAPI(API):
     def __repr__(self):
         return f'{self.__class__.__name__}()'
 
-    def get_vacancies(self):
+    def __get_all_vacancies(self):
         '''
-        Возвращает список вакансий, созданных на
-        основе класса Vacancy по переданным параметрам
-        пользователя
-        :return: список объектов класса Vacancy
+        Возвращает список всех найденных вакансий
+        :return: список найденных вакансий
         '''
         vacancies = []
 
@@ -62,6 +61,59 @@ class SJAPI(API):
             vacancies.append(response['objects'])
 
         return vacancies
+
+    def get_vacancies(self):
+        '''
+        Возвращает список вакансий, созданных на
+        основе класса Vacancy по переданным параметрам
+        пользователя
+        :return: список объектов класса Vacancy
+        '''
+        vacancies = self.__get_all_vacancies()
+
+        # цикл, перебирающий все вакансии
+        for obj in vacancies:
+            # цикл, перебирающий все элементы вакансии
+            for item in obj:
+
+                vacancy_name = item['profession']
+                try:
+                    vacancy_requirement = item['candidat']
+                except AttributeError:
+                    vacancy_requirement = 'Отсутсвует'
+
+                vacancy_responsibility = ''
+                vacancy_area = item['town']['title']
+                vacancy_salary_from = item['payment_from']
+                vacancy_salary_to = item['payment_to']
+                vacancy_currency = 'RUR'
+                vacancy_experience = item['experience']['title']
+                vacancy_employer = item['client']['title']
+                vacancy_employment = item['type_of_work']['title']
+                vacancy_address = item['address']
+
+                # проверка на то, что у вакансии указан адрес
+                if vacancy_address is None:
+                    vacancy_address = 'Адресс не указан'
+                else:
+                    vacancy_address = item['address']
+
+                # создание вакансии на основе экземпляра класса Vacancy
+                Vacancy(
+                    vacancy_name,
+                    vacancy_requirement,
+                    vacancy_responsibility,
+                    vacancy_area,
+                    vacancy_salary_from,
+                    vacancy_salary_to,
+                    vacancy_currency,
+                    vacancy_experience,
+                    vacancy_employer,
+                    vacancy_employment,
+                    vacancy_address
+                )
+
+        return Vacancy.vacancies
 
     @property
     def experience(self):
@@ -103,7 +155,7 @@ class SJAPI(API):
         вакансий
         :param value: область поиска
         '''
-        self.__area = value
+        self.__area = value.title()
 
     @property
     def only_with_salary(self):

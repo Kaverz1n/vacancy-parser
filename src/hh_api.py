@@ -30,12 +30,10 @@ class HHAPI(API):
     def __repr__(self):
         return f'{self.__class__.__name__}()'
 
-    def get_vacancies(self):
+    def __get_all_vacancies(self):
         '''
-        Возвращает список вакансий, созданных на
-        основе класса Vacancy по переданным параметрам
-        пользователя
-        :return: список объектов класса Vacancy
+        Возвращает список всех найденных вакансий
+        :return: список найденных вакансий
         '''
         vacancies = []
 
@@ -64,18 +62,46 @@ class HHAPI(API):
 
             self.__page += 1
 
+            vacancies.append(response['items'])
+
+        return vacancies
+
+    def get_vacancies(self):
+        '''
+        Возвращает вакансии, созданных на
+        основе класса Vacancy по переданным параметрам
+        пользователя
+        :return: список объектов класса Vacancy
+        '''
+
+        vacancies = self.__get_all_vacancies()
+
+        # цикл, перебирающий все вакансии
+        for obj in vacancies:
             # цикл, перебирающий все элементы вакансии
-            for item in response['items']:
+            for item in obj:
+
                 vacancy_name = item['name']
-                vacancy_requirement = item['snippet']['requirement']
-                vacancy_responsibility = item['snippet']['responsibility']
+
+                try:
+                    # удаление лишних хайлайтов
+                    requirement = item['snippet']['requirement']
+                    vacancy_requirement = requirement.replace('<highlighttext>', '').replace('</highlighttext>', '')
+                except AttributeError:
+                    vacancy_requirement = 'Отсутсвует'
+
+                try:
+                    vacancy_responsibility = item['snippet']['responsibility']
+                except AttributeError:
+                    vacancy_responsibility = 'Отсутствует'
+
                 vacancy_area = item['area']['name']
 
                 # проверка на то, что у вакансии указана зарплата
                 if item['salary'] is None:
                     vacancy_salary_from = 0
                     vacancy_salary_to = 0
-                    vacancy_currency = None
+                    vacancy_currency = ''
                 else:
                     vacancy_salary_from = item['salary']['from']
                     vacancy_salary_to = item['salary']['to']
@@ -92,14 +118,20 @@ class HHAPI(API):
                 else:
                     vacancy_address = item['address']['raw']
 
+                # устанавливает мин. зарплату 0, если её значение None
                 if vacancy_salary_from is None:
                     vacancy_salary_from = 0
 
+                # устанавливает макс. зарплату 0, если её значение None
                 if vacancy_salary_to is None:
                     vacancy_salary_to = 0
 
+                # проверяет соответсвует ли валюта указаной, если тип зарплаты True(зарплата указана)
+                if vacancy_currency != self.__currency and self.__only_with_salary is True:
+                    continue
+
                 # создание вакансии на основе экземпляра класса Vacancy
-                vacancy = Vacancy(
+                Vacancy(
                     vacancy_name,
                     vacancy_requirement,
                     vacancy_responsibility,
@@ -113,11 +145,7 @@ class HHAPI(API):
                     vacancy_address
                 )
 
-                # проверка, что валюта вакансии соответсвует переданной
-                if vacancy_currency == self.__currency:
-                    vacancies.append(vacancy)
-
-        return vacancies
+        return Vacancy.vacancies
 
     @property
     def experience(self):
@@ -232,8 +260,10 @@ class HHAPI(API):
             for currency in currencies:
                 if currencies.index(currency) + 1 == int(value):
                     self.__currency = currency['code']
+                else:
+                    self.__currency = 'RUR'
         except ValueError:
-            self.__currency = None
+            self.__currency = 'RUR'
 
     @property
     def salary(self):
