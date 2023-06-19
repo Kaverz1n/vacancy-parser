@@ -5,16 +5,15 @@ class Vacancy:
     vacancies = []
 
     def __init__(
-            self, name, requirement, responsibility,
-            area, salary_from, salary_to,
-            currency, experience, employer,
-            employment, address,
+            self, name, description, area,
+            salary_from, salary_to, currency,
+            experience, employer, employment,
+            address
     ):
         '''
         Информация по вакансии
         :param name: название вакансии
-        :param requirement: требования
-        :param responsibility: обязаности
+        :param description: описание вакансии
         :param area: местоположение
         :param salary_from: минимальная зарплата
         :param salary_to: максимальная зарплата
@@ -25,8 +24,7 @@ class Vacancy:
         :param address: адрес
         '''
         self.name = name
-        self.__requirement = requirement
-        self.__responsibility = responsibility
+        self.__description = description
         self.__area = area
         self.__salary_from = salary_from
         self.__salary_to = salary_to
@@ -39,8 +37,8 @@ class Vacancy:
         Vacancy.vacancies.append(self)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.name}, {self.__requirement},' \
-               f'{self.__responsibility}, {self.__area}, {self.__salary_from},' \
+        return f'{self.__class__.__name__}({self.name}, {self.__description},' \
+               f'{self.__area}, {self.__salary_from},' \
                f'{self.__salary_to}, {self.__currency}, {self.experience},' \
                f'{self.employer}, {self.__employment}, {self.adress}'
 
@@ -138,7 +136,7 @@ class Vacancy:
         Возвращает информацию о вакансии
         :return: информация вакансии
         '''
-        return f'Информация: {self.__requirement}\n{self.__responsibility}'
+        return f'Информация: {self.__description}'
 
     @property
     def area(self):
@@ -165,6 +163,22 @@ class Vacancy:
 
         salary = int((self.__salary_from + self.__salary_to) / 2)
         return f'{salary} {self.__currency}'
+
+    @property
+    def salary_from(self):
+        '''
+        Возвращает минимальную зарплату вакансии
+        :return: минимальная зарплата вакансии
+        '''
+        return self.__salary_from
+
+    @property
+    def salary_to(self):
+        '''
+        Возвращает максимальную зарплату вакансии
+        :return: максимальная зарплата вакансии
+        '''
+        return self.__salary_to
 
     @property
     def experience(self):
@@ -238,3 +252,15 @@ class Vacancy:
                 continue
 
         return min_vacancy
+
+    @classmethod
+    def get_all_vacancies(cls):
+        '''
+        Возвращает пронумерованный список всех вакансий
+        :return: пронумерованный список всех вакансий
+        '''
+        all_vacancies = ''
+        for num, vacancy in enumerate(cls.vacancies, start=1):
+            all_vacancies += f'{num} - {vacancy.name}, {vacancy.salary}\n'
+
+        return all_vacancies
