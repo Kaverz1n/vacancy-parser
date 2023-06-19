@@ -95,6 +95,7 @@ class HHAPI(API):
                 except AttributeError:
                     vacancy_responsibility = 'Отсутствует'
 
+                vacancy_description = f'{vacancy_requirement} {vacancy_responsibility}'
                 vacancy_area = item['area']['name']
 
                 # проверка на то, что у вакансии указана зарплата
@@ -116,7 +117,10 @@ class HHAPI(API):
                 if vacancy_address is None:
                     vacancy_address = 'Адресс не указан'
                 else:
-                    vacancy_address = item['address']['raw']
+                    if item['address']['raw'] is None:
+                        vacancy_address = 'Адресс не указан'
+                    else:
+                        vacancy_address = item['address']['raw']
 
                 # устанавливает мин. зарплату 0, если её значение None
                 if vacancy_salary_from is None:
@@ -133,8 +137,7 @@ class HHAPI(API):
                 # создание вакансии на основе экземпляра класса Vacancy
                 Vacancy(
                     vacancy_name,
-                    vacancy_requirement,
-                    vacancy_responsibility,
+                    vacancy_description,
                     vacancy_area,
                     vacancy_salary_from,
                     vacancy_salary_to,
@@ -210,11 +213,12 @@ class HHAPI(API):
         for country in countries[0]['areas']:
             if country['name'] == value.title():
                 self.__area = country['id']
-
+                break
             # цикл перебирает города в регионах
             for city in country['areas']:
                 if city['name'] == value.title():
                     self.__area = city['id']
+                    break
 
     @property
     def only_with_salary(self):
@@ -260,6 +264,7 @@ class HHAPI(API):
             for currency in currencies:
                 if currencies.index(currency) + 1 == int(value):
                     self.__currency = currency['code']
+                    break
                 else:
                     self.__currency = 'RUR'
         except ValueError:
