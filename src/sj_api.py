@@ -57,7 +57,6 @@ class SJAPI(API):
                 break
 
             self.__page += 1
-
             vacancies.append(response['objects'])
 
         return vacancies
@@ -78,17 +77,21 @@ class SJAPI(API):
 
                 vacancy_name = item['profession']
                 try:
-                    vacancy_requirement = item['candidat']
+                    vacancy_description = item['candidat']
                 except AttributeError:
-                    vacancy_requirement = 'Отсутсвует'
+                    vacancy_description = 'Отсутсвует'
 
-                vacancy_responsibility = ''
                 vacancy_area = item['town']['title']
                 vacancy_salary_from = item['payment_from']
                 vacancy_salary_to = item['payment_to']
                 vacancy_currency = 'RUR'
                 vacancy_experience = item['experience']['title']
-                vacancy_employer = item['client']['title']
+
+                try:
+                    vacancy_employer = item['client']['title']
+                except KeyError:
+                    vacancy_employer = 'Неизвестно'
+
                 vacancy_employment = item['type_of_work']['title']
                 vacancy_address = item['address']
 
@@ -101,8 +104,7 @@ class SJAPI(API):
                 # создание вакансии на основе экземпляра класса Vacancy
                 Vacancy(
                     vacancy_name,
-                    vacancy_requirement,
-                    vacancy_responsibility,
+                    vacancy_description,
                     vacancy_area,
                     vacancy_salary_from,
                     vacancy_salary_to,
