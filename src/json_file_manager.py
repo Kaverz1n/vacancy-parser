@@ -41,27 +41,30 @@ class JSONFileManager(FileManager):
         :param filename: название файла
         '''
         Vacancy.vacancies.clear()
-        with open(f'files/{filename}.json', 'r', encoding='UTF-8') as file:
-            json_data = json.load(file)
+        try:
+            with open(f'files/{filename}.json', 'r', encoding='UTF-8') as file:
+                json_data = json.load(file)
 
-            # цикл перебирает данные каждой вакансии
-            for vacancy in json_data:
-                if  vacancy['salary'] == 'Зарплата не указана':
-                    currency = 'RUR'
-                else:
-                    currency = vacancy['salary'].split()[1]
-                Vacancy(
-                    vacancy['name'],
-                    vacancy['description'],
-                    vacancy['area'],
-                    vacancy['salary_from'],
-                    vacancy['salary_to'],
-                    currency,
-                    vacancy['experience'],
-                    vacancy['employer'],
-                    vacancy['employment'],
-                    vacancy['address']
-                )
+                # цикл перебирает данные каждой вакансии
+                for vacancy in json_data:
+                    if vacancy['salary'] == 'Зарплата не указана':
+                        currency = 'RUR'
+                    else:
+                        currency = vacancy['salary'].split()[1]
+                    Vacancy(
+                        vacancy['name'],
+                        vacancy['description'],
+                        vacancy['area'],
+                        vacancy['salary_from'],
+                        vacancy['salary_to'],
+                        currency,
+                        vacancy['experience'],
+                        vacancy['employer'],
+                        vacancy['employment'],
+                        vacancy['address']
+                    )
+        except FileNotFoundError:
+            print('Такого файла не существует!')
 
     def load_vacancies_by_salary(self, filename, value):
         '''
@@ -113,31 +116,34 @@ class JSONFileManager(FileManager):
         :return: вакансии
         '''
         Vacancy.vacancies.clear()
-        with open(f'files/{filename}.json', 'r', encoding='UTF-8') as file:
-            json_data = json.load(file)
-            user_area = value
+        try:
+            with open(f'files/{filename}.json', 'r', encoding='UTF-8') as file:
+                json_data = json.load(file)
+                user_area = value
 
-            # цикл перебирает данные каждой вакансии
-            for vacancy in json_data:
-                if vacancy['salary'] == 'Зарплата не указана':
-                    currency = 'RUR'
-                else:
-                    currency = vacancy['salary'].split()[1]
+                # цикл перебирает данные каждой вакансии
+                for vacancy in json_data:
+                    if vacancy['salary'] == 'Зарплата не указана':
+                        currency = 'RUR'
+                    else:
+                        currency = vacancy['salary'].split()[1]
 
-                # проверка, что город вакансии совпадает с переданным
-                if vacancy['area'].lower() == user_area.lower():
-                    Vacancy(
-                        vacancy['name'],
-                        vacancy['description'],
-                        vacancy['area'],
-                        vacancy['salary_from'],
-                        vacancy['salary_to'],
-                        currency,
-                        vacancy['experience'],
-                        vacancy['employer'],
-                        vacancy['employment'],
-                        vacancy['address']
-                    )
+                    # проверка, что город вакансии совпадает с переданным
+                    if vacancy['area'].lower() == user_area.lower():
+                        Vacancy(
+                            vacancy['name'],
+                            vacancy['description'],
+                            vacancy['area'],
+                            vacancy['salary_from'],
+                            vacancy['salary_to'],
+                            currency,
+                            vacancy['experience'],
+                            vacancy['employer'],
+                            vacancy['employment'],
+                            vacancy['address']
+                        )
+        except FileNotFoundError:
+            print('Такого файла не существует!')
 
     def delete_vacancy(self, filename, value):
         '''
@@ -146,12 +152,18 @@ class JSONFileManager(FileManager):
         :param value: номер вакансии
         :param filename: название файла
         '''
-        with open(f'files/{filename}.json', 'r+', encoding='UTF-8') as file:
-            try:
-                json_data = json.load(file)
-                del json_data[value - 1]
-                file.seek(0)
-                file.truncate()
-                file.write(json.dumps(json_data, ensure_ascii=False))
-            except IndexError:
-                print('Вакансии с таким номером не существует')
+        try:
+            with open(f'files/{filename}.json', 'r+', encoding='UTF-8') as file:
+                try:
+                    json_data = json.load(file)
+                    del json_data[int(value) - 1]
+                    file.seek(0)
+                    file.truncate()
+                    file.write(json.dumps(json_data, ensure_ascii=False))
+                except IndexError:
+                    print('Вакансии с таким номером не существует')
+                except ValueError:
+                    print('Вы ввели некоректные данные')
+        except FileNotFoundError:
+            print("Такого файла не существует!")
+
