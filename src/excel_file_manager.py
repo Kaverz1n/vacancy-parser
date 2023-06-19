@@ -1,5 +1,5 @@
-from file_manager import FileManager
-from vacancy import Vacancy
+from src.file_manager import FileManager
+from src.vacancy import Vacancy
 from openpyxl import Workbook, load_workbook
 
 
@@ -181,10 +181,10 @@ class ExcelFileManager(FileManager):
                 work_book = load_workbook(f'files/{filename}.xlsx')
                 sheet = work_book.active
                 try:
-                    if sheet.max_row - 1 < value:
+                    if sheet.max_row - 1 < int(value) or int(value) < 1:
                         print('Вакансии с таким номером не существует')
                     else:
-                        sheet.delete_rows(value + 1)
+                        sheet.delete_rows(int(value) + 1)
                 except ValueError:
                     print('Вы ввели некоректные данные')
                 work_book.save(f'files/{filename}.xlsx')
