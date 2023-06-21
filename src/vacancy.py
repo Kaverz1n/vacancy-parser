@@ -260,7 +260,29 @@ class Vacancy:
         :return: пронумерованный список всех вакансий
         '''
         all_vacancies = ''
-        for num, vacancy in enumerate(cls.vacancies, start=1):
-            all_vacancies += f'{num} - {vacancy.name}, {vacancy.salary}\n'
+        if len(cls.vacancies) > 0:
+            for num, vacancy in enumerate(cls.vacancies, start=1):
+                all_vacancies += f'{num} - {vacancy.name}, {vacancy.salary}\n'
 
-        return all_vacancies
+            return all_vacancies
+        return 'Вакансий не найдено!'
+
+    @classmethod
+    def sort_vacancies(cls):
+        '''
+        Сортирует вакансии по зарплате, помещая вакансии без зарплаты
+        в начало списка
+        '''
+        all = []
+        with_salary = []
+        for vacancy in cls.vacancies:
+            if vacancy.salary == 'Зарплата не указана':
+                all.append(vacancy)
+            else:
+                with_salary.append(vacancy)
+        sorted_vacancies = sorted(with_salary, key=lambda x: int(x.salary.split()[0]))
+
+        all.extend(sorted_vacancies)
+        cls.vacancies = all
+
+
