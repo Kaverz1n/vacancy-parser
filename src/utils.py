@@ -88,6 +88,8 @@ def find_vacancy_menu():
     )
     api.get_vacancies()
     print(f'Найденные вакансии:\n{Vacancy.get_all_vacancies()}')
+    if Vacancy.get_all_vacancies() == 'Вакансий не найдено!':
+        menu()
     save_vacancies_menu()
 
 
